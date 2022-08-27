@@ -164,3 +164,26 @@ func CreateCuboid(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, &cuboid)
 }
+
+func DeleteCuboid(c *gin.Context) {
+	cuboidID := c.Param("cuboidID")
+
+	cuboid, err := FetchCuboid(cuboidID)
+
+	if err != nil {
+		if err.Error() == "not Found" {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	if r := db.CONN.Delete(&cuboid); r.Error != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": r.Error.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "OK"})
+
+}

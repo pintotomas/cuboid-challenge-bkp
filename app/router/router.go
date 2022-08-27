@@ -29,6 +29,7 @@ func Setup() *gin.Engine {
 		cuboid.GET("/:cuboidID", controller.GetCuboid)
 		cuboid.POST("", controller.CreateCuboid)
 		cuboid.PUT("/:cuboidID", controller.UpdateCuboid)
+		cuboid.DELETE("/:cuboidID", controller.DeleteCuboid)
 	}
 
 	return r
