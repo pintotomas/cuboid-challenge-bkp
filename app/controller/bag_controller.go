@@ -10,6 +10,18 @@ import (
 	"gorm.io/gorm"
 )
 
+func FetchBag(bagID string) (*models.Bag, error) {
+	var bag models.Bag
+	if r := db.CONN.Preload("Cuboids").First(&bag, bagID); r.Error != nil {
+		if errors.Is(r.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("not Found")
+		} else {
+			return nil, r.Error
+		}
+	}
+	return &bag, nil
+}
+
 func ListBags(c *gin.Context) {
 	var bags []models.Bag
 	if r := db.CONN.Preload("Cuboids").Find(&bags); r.Error != nil {
@@ -24,15 +36,14 @@ func ListBags(c *gin.Context) {
 func GetBag(c *gin.Context) {
 	bagID := c.Param("bagID")
 
-	var bag models.Bag
-	if r := db.CONN.Preload("Cuboids").First(&bag, bagID); r.Error != nil {
-		if errors.Is(r.Error, gorm.ErrRecordNotFound) {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Not Found"})
-		} else {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": r.Error.Error()})
-		}
+	bag, err := FetchBag(bagID)
 
-		return
+	if err != nil {
+		if err.Error() == "not Found" {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 	}
 
 	c.JSON(http.StatusOK, &bag)
