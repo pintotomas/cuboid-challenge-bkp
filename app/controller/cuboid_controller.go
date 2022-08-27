@@ -30,8 +30,10 @@ func GetCuboid(c *gin.Context) {
 	if err != nil {
 		if err.Error() == "not Found" {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
 		} else {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 	}
 
